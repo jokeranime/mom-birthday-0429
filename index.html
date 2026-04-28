@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>媽媽生日快樂</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #ffd6e0, #fff);
+    font-family: "Microsoft JhengHei", sans-serif;
+}
+
+/* 🎀 卡片 */
+.card {
+    background: rgba(255,255,255,0.95);
+    padding: 45px;
+    border-radius: 25px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    width: 520px;
+    position: relative;
+    z-index: 2; /* ⬅️ 卡片在最底 */
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+    color: #ff4d6d;
+    font-size: 38px;
+}
+
+/* 📸 照片 */
+.photo {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #ffb6c1;
+    margin: 15px 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+p {
+    font-size: 22px;
+    line-height: 1.8;
+}
+
+/* 🎂 */
+.cake {
+    font-size: 60px;
+    animation: float 2s infinite ease-in-out;
+}
+
+@keyframes float {
+    50% { transform: translateY(-10px); }
+}
+
+/* ❤️ */
+.heart {
+    font-size: 70px;
+    color: red;
+    animation: beat 1s infinite;
+}
+
+@keyframes beat {
+    50% { transform: scale(1.25); }
+}
+
+/* 💗 飄落愛心（在卡片前面） */
+.falling {
+    position: absolute;
+    top: -50px;
+    color: pink;
+    pointer-events: none;
+    z-index: 3; /* ⬅️ 愛心在卡片前 */
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    10% { opacity: 1; }
+    100% {
+        transform: translateY(110vh);
+        opacity: 0;
+    }
+}
+
+/* 🎆 煙火（最上層） */
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;           /* ⬅️ 煙火最高 */
+    pointer-events: none; /* ⬅️ 不擋點擊 */
+}
+
+/* 📱 */
+@media (max-width: 600px) {
+    .card { width: 90%; padding: 25px; }
+    h1 { font-size: 26px; }
+    p { font-size: 16px; }
+    .photo { width: 140px; height: 140px; }
+    .cake { font-size: 40px; }
+    .heart { font-size: 50px; }
+}
+</style>
+
+</head>
+
+<body>
+
+<canvas id="fireworks"></canvas>
+
+<div class="card">
+    <h1>🎂 媽媽生日快樂 ❤️</h1>
+
+```
+<img src="https://cdn.phototourl.com/free/2026-04-28-91731371-d5cd-448b-b38d-ba5eaaef71d5.jpg" class="photo">
+
+<div class="cake">🎂</div>
+
+<p>
+    親愛的媽媽：<br><br>
+    謝謝妳一直以來的照顧與付出，<br>
+    妳的愛讓我一直很安心。<br><br>
+    願妳每天都開開心心，<br>
+    身體健康，幸福滿滿！<br><br>
+    ❤️ 生日快樂 ❤️
+</p>
+
+<div class="heart">❤️</div>
+```
+
+</div>
+
+<script>
+
+/* 💗 飄落愛心（手機優化） */
+function createHeart() {
+    let heart = document.createElement("div");
+    heart.className = "falling";
+    heart.innerHTML = "❤️";
+
+    heart.style.left = Math.random() * 100 + "vw";
+    heart.style.fontSize = (Math.random() * 20 + 10) + "px";
+    heart.style.animationDuration = (Math.random() * 5 + 3) + "s";
+
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 8000);
+}
+setInterval(createHeart, 300);
+
+
+/* 🎆 煙火（彩色 + 發光 + 手機支援） */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let particles = [];
+
+function createFirework(x, y) {
+    for (let i = 0; i < 80; i++) {
+        particles.push({
+            x: x,
+            y: y,
+            angle: Math.random() * Math.PI * 2,
+            speed: Math.random() * 6 + 2,
+            radius: Math.random() * 4 + 2,
+            alpha: 1,
+            color: `hsl(${Math.random()*360}, 100%, 60%)`
+        });
+    }
+}
+
+document.addEventListener("click", (e) => {
+    createFirework(e.clientX, e.clientY);
+});
+
+document.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    createFirework(touch.clientX, touch.clientY);
+});
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= 0.02;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+
+        ctx.fillStyle = p.color.replace("hsl", "hsla").replace(")", `,${p.alpha})`);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = p.color;
+
+        ctx.fill();
+
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            i--;
+        }
+    }
+
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(animate);
+}
+animate();
+
+</script>
+
+</body>
+</html>
+
